@@ -1,0 +1,5 @@
+name "generico"
+description "A minimal D application."
+authors "otavio.porto"
+copyright "Copyright © 2019, otavio.porto"
+license "proprietary"

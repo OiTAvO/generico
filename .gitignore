@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/generico
+generico.so
+generico.dylib
+generico.dll
+generico.a
+generico.lib
+generico-test-*
+*.exe
+*.o
+*.obj
+*.lst
