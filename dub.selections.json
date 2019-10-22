@@ -1,0 +1,18 @@
+{
+	"fileVersion": 1,
+	"versions": {
+		"ddbc": "0.4.3",
+		"derelict-pq": "2.2.0",
+		"derelict-util": "2.0.6",
+		"eventcore": "0.8.47",
+		"libasync": "0.8.4",
+		"libevent": "2.0.2+2.0.16",
+		"memutils": "0.4.13",
+		"mysql-native": "2.2.2",
+		"stdx-allocator": "2.77.5",
+		"taggedalgebraic": "0.11.5",
+		"unit-threaded": "0.7.55",
+		"vibe-core": "1.7.0",
+		"vibe-d": "0.8.6"
+	}
+}

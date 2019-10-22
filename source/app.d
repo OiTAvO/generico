@@ -1,21 +1,10 @@
 module mx;
-import inspect;
+import dao;
+import pbar;
 import std.stdio;
-
-class Pessoa
-{
-	string nome;
-	string sobrenome;
-	int idade;
-	string cpf;
-}
 
 void main()
 {
-	Pessoa p = new Pessoa();
-	Inspect!Pessoa iPessoa;
-	foreach(field; iPessoa.fields)
-	{
-		writeln(iPessoa.get(field));
-	}
+	foreach(contato; readDAO!Contato)
+		writeln(contato.nome, " ", contato.id);
 }

@@ -1,11 +1,21 @@
 module pbar;
+import std.conv;
+import std.stdio;
 
-class Foo
+class Pessoa
 {
-    private int idade;
-	private string nome;
-    
-    void t() {}
-    void tt() {}
-    int getBbar() { return this.idade; }
+	string sobrenome;
+	int idade;
+}
+
+
+class Contato
+{
+    long id;
+	string nome;
+	
+	void sayHello()
+	{
+		writeln("Hello from ", nome, "!!");
+	}
 }

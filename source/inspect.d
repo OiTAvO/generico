@@ -1,20 +1,25 @@
 module inspect;
 import std.conv;
 import std.traits;
-import std.array : join;
+import std.string;
 
 struct Inspect(T)
 {
 	string[] fields = getFields!T[1];
-	mixin generateAll!T;
-}
-
-private struct Field(T)
-{
-	T obj;
+	mixin(generatePOD!T);
+	mixin(generateGet!T);
+	mixin(generateSet!T);		
 	
-	string get() {return to!string(obj); }
-	void set(string value) { obj = to!T(value); }
+	T fromPOD(typeof(POD) pod)
+	{
+		POD = pod;
+		T obj = new T();
+		enum members = getFields!T;
+		static foreach(i, member; members[1])
+			__traits(getMember, obj, member) = 
+				mixin("to!%s(get(\"%s\"))".format(members[0][i],member));
+		return obj;
+	}
 }
 
 private string[][2] getFields(T)()
@@ -32,48 +37,53 @@ private string[][2] getFields(T)()
 	
 }
 
-private string[] generateFields(T)()
+private string generatePOD(T)()
 {
-	string[] output;
-	enum fields = getFields!T;
-	static foreach (i, field; fields[0])
-		output ~= "private Field!" ~ field ~ " " ~ fields[1][i] ~ ";";
+	enum structName = toLower!string(T.stringof);
+	string output = "private struct %s {".format(structName);
+	output ~= generateFields!T;
+	output ~= "}";
+	output ~= structName ~ " POD;";
+	output ~= "alias POD this;";
 	return output;
 }
 
-private string[] generateGet(T)()
+private string generateFields(T)()
 {
-	string[] output;
 	enum fields = getFields!T;
+	string output;
+	static foreach (i, field; fields[0])
+		output ~=  "%s %s;".format(field, fields[1][i]);
+	return output;
+}
+
+private string generateGet(T)()
+{
+	enum fields = getFields!T;
+	string output;
 	output ~= "auto get(string memberName) {";
 	output ~= "switch(memberName) {";
 	static foreach (field; fields[1])
 	{
 		output ~= "case \"" ~ field ~ "\":";
-		output ~= "return this." ~ field ~ ".get();";
+		output ~= "return to!string(this." ~ field ~ ");";
 	}
 	output ~= "default: return null;}}";
 	return output;
 }
 
-private string[] generateSet(T)()
+private string generateSet(T)()
 {
-	string[] output;
 	enum fields = getFields!T;
+	string output;
 	output ~= "void set(string memberName, string memberValue) {";
 	output ~= "switch(memberName) {";
-	static foreach (field; fields[1])
+	static foreach (i, field; fields[1])
 	{	
 		output ~= "case \"" ~ field ~ "\":";
-		output ~= "this." ~ field ~ ".set(memberValue); break;";
+		output ~= "this.%s = to!%s(memberValue);".format(field, fields[0][i]);
+		output ~= " break;";
 	}
 	output ~= "default: break;}}";
 	return output;
-}
-
-private mixin template generateAll(T)
-{
-	mixin((generateFields!T).join("\n"));
-	mixin((generateGet!T).join("\n"));
-	mixin((generateSet!T).join("\n"));
 }
