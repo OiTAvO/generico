@@ -4,4 +4,13 @@ authors "otavio.porto"
 copyright "Copyright © 2019, otavio.porto"
 license "proprietary"
 dependency "ddbc" version="~>0.4.2"
-libs "odbc32"
+configuration "windows" {
+	libs "odbc32" 
+	platform "windows-x86_64-dmd"
+	targetType "executable"
+	dflags "-release"
+}
+configuration "doc-gen"{
+	dflags "-c" "-Dddocs"
+	platform "all"
+}

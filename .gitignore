@@ -1,7 +1,8 @@
 .dub
 docs.json
 __dummy.html
-docs/
+docs/*
+!docs/inspect.html
 /generico
 generico.so
 generico.dylib

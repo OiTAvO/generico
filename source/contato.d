@@ -1,13 +1,5 @@
-module pbar;
-import std.conv;
+module contato;
 import std.stdio;
-
-class Pessoa
-{
-	string sobrenome;
-	int idade;
-}
-
 
 class Contato
 {

@@ -1,31 +1,68 @@
 module inspect;
 import std.conv;
-import std.traits;
 import std.string;
+import std.traits;
 
-struct Inspect(T)
+/// Template class that generates POD object and makes it accessible
+class Inspect(T) if (is(T == class) || is(T == struct))
 {
-	string[] fields = getFields!T[1];
-	mixin(generatePOD!T);
-	mixin(generateGet!T);
-	mixin(generateSet!T);		
-	
+    /// array with the generated POD field names.
+	enum string[] fields = Fields[1];
+    
+    /// POD object is Voldemort type
+    auto POD = generatePOD!T;
+    alias POD this;
+
+    /// returns a new T instance by the given POD.
 	T fromPOD(typeof(POD) pod)
 	{
 		POD = pod;
 		T obj = new T();
-		enum members = getFields!T;
-		static foreach(i, member; members[1])
+		static foreach(i, member; Fields[1])
 			__traits(getMember, obj, member) = 
-				mixin("to!%s(get(\"%s\"))".format(members[0][i],member));
+				mixin("to!%s(get(\"%s\"))".format(Fields[0][i],member));
 		return obj;
 	}
+
+    deprecated void fillPOD(T obj)
+	{
+		static foreach(member; Fields[1])
+			set(member, to!string(__traits(getMember, obj, member))); 
+	}
+	
+  private:
+	enum Fields = getFields!T;
+
+    /// returns string memberValue by the given POD memberName
+    string get(string memberName)
+    {
+        mixin(generateGet!T);   
+    }
+
+    /// set string memberValue by the given POD memberName
+	void set(string memberName, string memberValue)
+    {
+        mixin(generateSet!T);   
+    }
+}
+
+///
+unittest
+{
+	import contato;
+	
+	Contato[] lista;
+	auto obj = new Inspect!Contato;
+	typeof(obj.POD) a, b, c;  // create POD type objects
+	foreach(foo; [a, b, c])
+		lista ~= obj.fromPOD(foo);
+	
+	assert(lista.length == 3);
 }
 
 private string[][2] getFields(T)()
 {
 	string[][2] members;
-	static if (is(T == class) || is(T == struct))
 		static foreach(member; [ __traits(allMembers, T) ])
 			static if (!isFunction!(__traits(getMember, T, member)))
 				static if (member != "Monitor")
@@ -37,15 +74,12 @@ private string[][2] getFields(T)()
 	
 }
 
-private string generatePOD(T)()
+private auto generatePOD(T)()
 {
 	enum structName = toLower!string(T.stringof);
-	string output = "private struct %s {".format(structName);
-	output ~= generateFields!T;
-	output ~= "}";
-	output ~= structName ~ " POD;";
-	output ~= "alias POD this;";
-	return output;
+	mixin("struct %s { %s }".format(structName, generateFields!T));
+	mixin(structName ~ " POD;");
+	return POD;
 }
 
 private string generateFields(T)()
@@ -59,31 +93,20 @@ private string generateFields(T)()
 
 private string generateGet(T)()
 {
-	enum fields = getFields!T;
-	string output;
-	output ~= "auto get(string memberName) {";
-	output ~= "switch(memberName) {";
-	static foreach (field; fields[1])
-	{
-		output ~= "case \"" ~ field ~ "\":";
-		output ~= "return to!string(this." ~ field ~ ");";
-	}
-	output ~= "default: return null;}}";
-	return output;
+	enum Fields = getFields!T;
+	enum Case = "case \"%s\": return to!string(this.%s);";
+	string output = "switch(memberName) {";
+	static foreach (field; Fields[1])
+		output ~= Case.format(field, field);
+	return output ~ "default: return null;}";
 }
 
 private string generateSet(T)()
 {
-	enum fields = getFields!T;
-	string output;
-	output ~= "void set(string memberName, string memberValue) {";
-	output ~= "switch(memberName) {";
-	static foreach (i, field; fields[1])
-	{	
-		output ~= "case \"" ~ field ~ "\":";
-		output ~= "this.%s = to!%s(memberValue);".format(field, fields[0][i]);
-		output ~= " break;";
-	}
-	output ~= "default: break;}}";
-	return output;
+	enum Fields = getFields!T;
+	enum Case = "case \"%s\": this.%s = to!%s(memberValue); break;";
+	string output = "switch(memberName) {";
+	static foreach (i, field; Fields[1])
+		output ~= Case.format(field, field, Fields[0][i]);
+	return output ~ "default: break;}";
 }

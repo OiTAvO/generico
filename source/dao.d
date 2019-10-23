@@ -1,8 +1,8 @@
 module dao;
 import ddbc;
-import pbar;
-import std.stdio;
+import contato;
 import inspect;
+import std.stdio;
 
 T[] readDAO(T)()
 {
@@ -13,9 +13,9 @@ T[] readDAO(T)()
     
     Statement stmt = conn.createStatement();
     scope(exit) stmt.close();
-    
+
 	T[] lista;
-	Inspect!T obj;
+	auto obj = new Inspect!T;
     foreach(ref e; stmt.select!(typeof(obj.POD)))
 		lista ~= obj.fromPOD(e);
 	return lista;

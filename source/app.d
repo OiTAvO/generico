@@ -1,10 +1,9 @@
 module mx;
 import dao;
-import pbar;
-import std.stdio;
+import contato;
 
 void main()
 {
 	foreach(contato; readDAO!Contato)
-		writeln(contato.nome, " ", contato.id);
+		contato.sayHello;
 }
