@@ -14,3 +14,4 @@ generico-test-*
 *.o
 *.obj
 *.lst
+*.dll

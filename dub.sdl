@@ -10,6 +10,11 @@ configuration "windows" {
 	targetType "executable"
 	dflags "-release"
 }
+configuration "posix" {
+	platform "Posix"
+	targetType "executable"
+	dflags "-release"
+}
 configuration "doc-gen"{
 	dflags "-c" "-Dddocs"
 	platform "all"
